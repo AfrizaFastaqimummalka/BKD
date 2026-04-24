@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand:       #3366ff;
+    --brand-light: #eef5ff;
+    --brand-dark:  #1432e1;
+    --success:     #16a34a;
+    --warning:     #d97706;
+    --danger:      #dc2626;
+    --gray-soft:   #f8fafc;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-slate-100;
+  }
+
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-xl
+           transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl
+           transition-all duration-150 active:scale-95;
+  }
+
+  .btn-danger {
+    @apply bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-4 py-2 rounded-xl
+           transition-all duration-150 active:scale-95;
+  }
+
+  .input {
+    @apply w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+           placeholder:text-slate-400 transition-all duration-150;
+  }
+
+  .label {
+    @apply block text-sm font-semibold text-slate-600 mb-1.5;
+  }
+
+  .badge-draft     { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600; }
+  .badge-pending   { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700; }
+  .badge-approved  { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700; }
+  .badge-rejected  { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700; }
+
+  .badge-pendidikan  { @apply inline-flex px-2 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-700; }
+  .badge-penelitian  { @apply inline-flex px-2 py-0.5 rounded-md text-xs font-semibold bg-purple-50 text-purple-700; }
+  .badge-pengabdian  { @apply inline-flex px-2 py-0.5 rounded-md text-xs font-semibold bg-teal-50 text-teal-700; }
+
+  .page-title { @apply text-2xl font-bold text-slate-800 tracking-tight; }
+  .section-title { @apply text-lg font-bold text-slate-700; }
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeIn 0.25s ease both; }
+
+/* Slide-in for modals */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-slide-up { animation: slideUp 0.2s ease both; }

@@ -45,10 +45,13 @@ app.onError((err, c) => {
   return c.json({ error: 'Internal server error' }, 500)
 })
 
+import { handle } from 'hono/vercel'
+
 // Start server (local dev)
-const port = parseInt(process.env.PORT ?? '3001')
-console.log(`🚀 BKD Online API running on http://localhost:${port}`)
+if (process.env.NODE_ENV !== 'production') {
+  const port = parseInt(process.env.PORT ?? '3001')
+  console.log(`🚀 BKD Online API running on http://localhost:${port}`)
+  serve({ fetch: app.fetch, port })
+}
 
-serve({ fetch: app.fetch, port })
-
-export default app
+export default handle(app)

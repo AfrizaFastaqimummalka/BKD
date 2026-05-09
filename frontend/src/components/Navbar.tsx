@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { BarChart3, ClipboardList, ShieldCheck, Users, BookOpen, LogOut, ChevronDown } from 'lucide-react'
+import BkdLogo from './BkdLogo'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
 
@@ -60,9 +61,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 shrink-0">
-          <div className="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-sm">
-            <BarChart3 size={18} className="text-white" />
-          </div>
+          <BkdLogo className="w-9 h-9 text-brand-600 drop-shadow-sm" />
           <div className="hidden sm:block">
             <div className="text-sm font-bold text-slate-800 leading-tight">BKD Online</div>
             <div className="text-[10px] text-slate-400 leading-tight">Monitoring Kinerja Dosen</div>

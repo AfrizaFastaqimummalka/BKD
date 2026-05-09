@@ -118,8 +118,8 @@ export default function RekapPage() {
     .page { max-width:680px; margin:0 auto; padding:48px 40px; }
     .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:20px; border-bottom:2px solid #3366ff; margin-bottom:28px; }
     .logo { display:flex; align-items:center; gap:12px; }
-    .logo-box { width:44px; height:44px; background:#3366ff; border-radius:10px; display:flex; align-items:center; justify-content:center; }
-    .logo-box svg { width:22px; height:22px; fill:white; }
+    .logo-box { width:44px; height:44px; color:#1a44f5; display:flex; align-items:center; justify-content:center; }
+    .logo-box svg { width:44px; height:44px; }
     .logo-text h1 { font-size:16px; font-weight:700; color:#1e293b; }
     .logo-text p  { font-size:11px; color:#64748b; margin-top:1px; }
     .doc-meta { text-align:right; }
@@ -150,7 +150,15 @@ export default function RekapPage() {
   <div class="header">
     <div class="logo">
       <div class="logo-box">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" stroke="currentColor" stroke-width="8" stroke-linejoin="round"/>
+          <line x1="50" y1="50" x2="50" y2="96" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
+          <line x1="50" y1="50" x2="10" y2="27" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
+          <line x1="50" y1="50" x2="90" y2="27" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
+          <text x="50" y="31" font-size="28" font-weight="800" font-family="sans-serif" fill="currentColor" text-anchor="middle" dominant-baseline="middle">B</text>
+          <text x="30" y="66" font-size="28" font-weight="800" font-family="sans-serif" fill="currentColor" text-anchor="middle" dominant-baseline="middle">K</text>
+          <text x="70" y="66" font-size="28" font-weight="800" font-family="sans-serif" fill="currentColor" text-anchor="middle" dominant-baseline="middle">D</text>
+        </svg>
       </div>
       <div class="logo-text">
         <h1>BKD Online</h1>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BarChart3, Eye, EyeOff, LogIn } from 'lucide-react'
+import { Eye, EyeOff, LogIn } from 'lucide-react'
+import BkdLogo from '../components/BkdLogo'
 import { useAuth } from '../context/AuthContext'
 import { ErrorMessage } from '../components/UI'
 
@@ -45,9 +46,7 @@ export default function Login() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <BarChart3 size={28} className="text-white" />
-          </div>
+          <BkdLogo className="w-16 h-16 mx-auto mb-4 text-brand-600 drop-shadow-md" />
           <h1 className="text-2xl font-bold text-slate-800">BKD Online</h1>
           <p className="text-slate-500 text-sm mt-1">Sistem Monitoring Kinerja Dosen</p>
         </div>

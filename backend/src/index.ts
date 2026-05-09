@@ -23,6 +23,7 @@ app.use('*', cors({
   ],
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }))
 
 // Health check
@@ -45,13 +46,12 @@ app.onError((err, c) => {
   return c.json({ error: 'Internal server error' }, 500)
 })
 
-import { handle } from '@hono/node-server/vercel'
-
-// Start server (local dev)
+// For local development
 if (process.env.NODE_ENV !== 'production') {
   const port = parseInt(process.env.PORT ?? '3001')
   console.log(`🚀 BKD Online API running on http://localhost:${port}`)
   serve({ fetch: app.fetch, port })
 }
 
-export default handle(app)
+// For Vercel serverless - export fetch handler directly
+export default app.fetch

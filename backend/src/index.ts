@@ -45,7 +45,7 @@ app.onError((err, c) => {
   return c.json({ error: 'Internal server error' }, 500)
 })
 
-import { handle } from 'hono/vercel'
+import { handle } from '@hono/node-server/vercel'
 
 // Start server (local dev)
 if (process.env.NODE_ENV !== 'production') {

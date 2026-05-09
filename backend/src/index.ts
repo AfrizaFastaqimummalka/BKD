@@ -1,9 +1,10 @@
 import 'dotenv/config'
+import type { IncomingMessage, ServerResponse } from 'http'
 import auth from './routes/auth.js'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
-import { serve } from '@hono/node-server'
+import { serve, getRequestListener } from '@hono/node-server'
 
 import users      from './routes/users.js'
 import aktivitas  from './routes/aktivitas.js'
@@ -35,7 +36,7 @@ app.route('/api/aktivitas',  aktivitas)
 app.route('/api/dokumen',    dokumen)
 app.route('/api/verifikasi', verifikasi)
 app.route('/api/rekap',      rekap)
-app.route('/api/auth', auth)
+app.route('/api/auth',       auth)
 
 // 404 fallback
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))
@@ -53,5 +54,5 @@ if (process.env.NODE_ENV !== 'production') {
   serve({ fetch: app.fetch, port })
 }
 
-// For Vercel serverless - export fetch handler directly
-export default app.fetch
+// For Vercel - use getRequestListener to convert IncomingMessage -> Web Request
+export default getRequestListener(app.fetch)

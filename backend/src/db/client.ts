@@ -10,6 +10,6 @@ export async function query<T = Record<string, unknown>>(
   text: string,
   params?: unknown[]
 ): Promise<T[]> {
-  const rows = await sql(text, params as unknown[])
+  const rows = await (sql as any)(text, params || [])
   return rows as T[]
 }

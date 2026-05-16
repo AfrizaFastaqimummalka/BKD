@@ -33,12 +33,7 @@ export default function Login() {
     }
   }
 
-  // Demo accounts helper
-  const DEMO = [
-    { label: 'Admin',    email: 'admin@univ.ac.id',  role: 'admin' },
-    { label: 'Dosen',    email: 'budi@univ.ac.id',   role: 'dosen' },
-    { label: 'Reviewer', email: 'ahmad@univ.ac.id',  role: 'reviewer' },
-  ]
+
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
@@ -112,35 +107,6 @@ export default function Login() {
               )}
             </button>
           </form>
-
-          {/* Demo accounts */}
-          <div className="mt-5 pt-5 border-t border-slate-100">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 text-center">
-              Akun Demo
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {DEMO.map(d => (
-                <button
-                  key={d.email}
-                  onClick={() => { setEmail(d.email); setPassword('admin123') }}
-                  className="flex flex-col items-center gap-1 p-2.5 rounded-xl border border-slate-200 hover:border-brand-400 hover:bg-brand-50 transition-all group"
-                >
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md
-                    ${d.role === 'admin' ? 'bg-brand-100 text-brand-700' :
-                      d.role === 'dosen' ? 'bg-purple-100 text-purple-700' :
-                      'bg-teal-100 text-teal-700'}`}>
-                    {d.label}
-                  </span>
-                  <span className="text-[10px] text-slate-400 group-hover:text-brand-500 transition-colors truncate w-full text-center">
-                    {d.email.split('@')[0]}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-slate-400 text-center mt-2">
-              Klik akun → password otomatis terisi → klik Masuk
-            </p>
-          </div>
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-6">

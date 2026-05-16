@@ -17,15 +17,7 @@ const app = new Hono()
 // Middleware
 app.use('*', logger())
 app.use('*', cors({
-  origin: (origin) => {
-    const allowed = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://mybkd.vercel.app',
-      process.env.FRONTEND_URL
-    ].filter(Boolean)
-    return allowed.includes(origin) ? origin : allowed[0]
-  },
+  origin: ['http://localhost:5173', 'https://bkds.app'],
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

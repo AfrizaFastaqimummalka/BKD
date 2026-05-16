@@ -17,11 +17,15 @@ const app = new Hono()
 // Middleware
 app.use('*', logger())
 app.use('*', cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://mybkd.vercel.app'
-  ],
+  origin: (origin) => {
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://mybkd.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean)
+    return allowed.includes(origin) ? origin : allowed[0]
+  },
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -47,12 +51,10 @@ app.onError((err, c) => {
   return c.json({ error: 'Internal server error' }, 500)
 })
 
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-  const port = parseInt(process.env.PORT ?? '3001')
-  console.log(`🚀 BKD Online API running on http://localhost:${port}`)
-  serve({ fetch: app.fetch, port })
-}
+// Start the server
+const port = parseInt(process.env.PORT ?? '3001')
+console.log(`🚀 BKD Online API running on port ${port}`)
+serve({ fetch: app.fetch, port })
 
-// For Vercel - use getRequestListener to convert IncomingMessage -> Web Request
+// For Vercel fallback
 export default getRequestListener(app.fetch)

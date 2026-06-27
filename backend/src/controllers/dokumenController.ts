@@ -8,12 +8,17 @@ import {
 } from '../models/dokumenModel.js'
 
 export async function uploadDokumen(c: Context) {
+  const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
   try {
     const formData = await c.req.formData()
     const file = formData.get('file') as File | null
     const aktivitasId = formData.get('aktivitas_id') as string | null
 
     if (!file || !aktivitasId) return c.json({ error: 'file dan aktivitas_id wajib diisi' }, 400)
+
+    if (file.size > MAX_SIZE) {
+      return c.json({ error: `Ukuran file terlalu besar. Maksimal 50MB, ukuran file Anda: ${(file.size / 1024 / 1024).toFixed(1)}MB` }, 413)
+    }
 
     const id = parseInt(aktivitasId)
     if (isNaN(id)) return c.json({ error: 'aktivitas_id tidak valid' }, 400)

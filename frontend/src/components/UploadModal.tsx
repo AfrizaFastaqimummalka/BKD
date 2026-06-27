@@ -18,9 +18,21 @@ export default function UploadModal({ aktivitasId, existingDocs, onClose, onSave
   const [error, setError]         = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
+
+    // Validasi ukuran file sebelum upload
+    const oversized = files.filter(f => f.size > MAX_FILE_SIZE)
+    if (oversized.length > 0) {
+      const names = oversized.map(f => f.name).join(', ')
+      setError(`File terlalu besar (maks 50MB): ${names}`)
+      if (inputRef.current) inputRef.current.value = ''
+      return
+    }
+
     setUploading(true)
     setError('')
     try {
@@ -30,7 +42,13 @@ export default function UploadModal({ aktivitasId, existingDocs, onClose, onSave
       setDocs(d => [...d, ...uploaded])
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload gagal')
+      const msg = err instanceof Error ? err.message : 'Upload gagal'
+      // Tangkap pesan generik dari jaringan dan tampilkan lebih deskriptif
+      if (msg === 'Network Error' || msg.toLowerCase().includes('network')) {
+        setError('Gagal mengirim file. Pastikan ukuran file tidak terlalu besar dan koneksi internet stabil.')
+      } else {
+        setError(msg)
+      }
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -67,7 +85,7 @@ export default function UploadModal({ aktivitasId, existingDocs, onClose, onSave
           <div className="text-sm font-semibold text-slate-700">
             {uploading ? 'Mengupload...' : 'Klik untuk upload dokumen'}
           </div>
-          <div className="text-xs text-slate-400 mt-1">PDF, JPG, PNG, DOCX — maks 10MB</div>
+          <div className="text-xs text-slate-400 mt-1">PDF, JPG, PNG, DOCX — maks 50MB</div>
           <input
             ref={inputRef}
             type="file"

@@ -10,18 +10,46 @@ import {
 
 export async function login(c: Context) {
   try {
-    const { email, password } = await c.req.json<{ email: string; password: string }>()
-    if (!email || !password) return c.json({ error: 'Email dan password wajib diisi' }, 400)
+    let body: unknown
+    try {
+      body = await c.req.json()
+    } catch {
+      return c.json({ error: 'Request body harus berupa JSON yang valid' }, 400)
+    }
 
-    const rows = await findUserByEmail(email)
+    // Reject non-object bodies and non-string field values (prevents object injection)
+    if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+      return c.json({ error: 'Format request tidak valid' }, 400)
+    }
+
+    const { email, password } = body as Record<string, unknown>
+
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return c.json({ error: 'Email dan password harus berupa string' }, 400)
+    }
+
+    const trimmedEmail = email.trim()
+    const trimmedPassword = password.trim()
+
+    if (!trimmedEmail || !trimmedPassword) {
+      return c.json({ error: 'Email dan password wajib diisi' }, 400)
+    }
+
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      return c.json({ error: 'Format email tidak valid' }, 400)
+    }
+
+    const rows = await findUserByEmail(trimmedEmail)
     if (!rows.length) return c.json({ error: 'Email atau password salah' }, 401)
 
     const user = rows[0]
-    const isMatch = await bcrypt.compare(password, user.password)
+    const isMatch = await bcrypt.compare(trimmedPassword, user.password)
     if (!isMatch) return c.json({ error: 'Email atau password salah' }, 401)
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET!, {
       expiresIn: '1d',
+      algorithm: 'HS256',
     })
 
     return c.json({
@@ -34,6 +62,7 @@ export async function login(c: Context) {
     return c.json({ error: 'Terjadi kesalahan server' }, 500)
   }
 }
+
 
 export async function register(c: Context) {
   try {
@@ -68,17 +97,13 @@ export async function register(c: Context) {
 
 export async function me(c: Context) {
   try {
-    const authHeader = c.req.header('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return c.json({ error: 'Token tidak ditemukan' }, 401)
-    }
-
-    const token = authHeader.split(' ')[1]
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: number }
-    const rows = await findAuthUserById(decoded.id)
+    // jwtUser is set by authMiddleware — no need to re-verify the token here
+    const jwtUser = c.get('jwtUser') as { id: number }
+    const rows = await findAuthUserById(jwtUser.id)
     if (!rows.length) return c.json({ error: 'User tidak ditemukan' }, 404)
     return c.json({ user: rows[0] })
   } catch (_err) {
     return c.json({ error: 'Token tidak valid' }, 401)
   }
 }
+

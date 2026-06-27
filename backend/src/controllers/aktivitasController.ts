@@ -1,4 +1,5 @@
 import type { Context } from 'hono'
+import type { JwtPayload } from '../middleware/auth.js'
 import {
   findAktivitasById,
   insertAktivitas,
@@ -10,16 +11,30 @@ import {
   updateAktivitas,
 } from '../models/aktivitasModel.js'
 
+/** Roles that can access any user's data (not just their own) */
+const PRIVILEGED_ROLES = ['admin', 'reviewer']
+
 export async function getAktivitas(c: Context) {
   try {
-    const userId = c.req.query('user_id')
-    const status = c.req.query('status')
-    const jenis = c.req.query('jenis')
+    const actor = c.get('jwtUser') as JwtPayload
+    const statusQ = c.req.query('status')
+    const jenisQ = c.req.query('jenis')
+
+    let userId: number | undefined
+
+    if (PRIVILEGED_ROLES.includes(actor.role)) {
+      // Admin/reviewer: allow filtering by any user_id query param
+      const userIdQ = c.req.query('user_id')
+      userId = userIdQ ? parseInt(userIdQ) : undefined
+    } else {
+      // Dosen: can ONLY see their own aktivitas — ignore user_id query param
+      userId = actor.id
+    }
 
     const rows = await listAktivitas({
-      userId: userId ? parseInt(userId) : undefined,
-      status: status ?? undefined,
-      jenis: jenis ?? undefined,
+      userId,
+      status: statusQ ?? undefined,
+      jenis: jenisQ ?? undefined,
     })
 
     return c.json({ data: rows })
@@ -37,9 +52,17 @@ export async function getAktivitasById(c: Context) {
     const rows = await findAktivitasById(id)
     if (!rows.length) return c.json({ error: 'Aktivitas not found' }, 404)
 
+    const actor = c.get('jwtUser') as JwtPayload
+    const record = rows[0] as Record<string, unknown>
+
+    // IDOR check: dosen can only view their own record
+    if (!PRIVILEGED_ROLES.includes(actor.role) && record.user_id !== actor.id) {
+      return c.json({ error: 'Forbidden: bukan milik Anda' }, 403)
+    }
+
     const dok = await listDokumenByAktivitasId(id)
     const ver = await listVerifikasiByAktivitasId(id)
-    return c.json({ data: { ...rows[0], dokumen: dok, verifikasi_history: ver } })
+    return c.json({ data: { ...record, dokumen: dok, verifikasi_history: ver } })
   } catch (_e) {
     return c.json({ error: 'Failed to fetch aktivitas' }, 500)
   }
@@ -47,24 +70,30 @@ export async function getAktivitasById(c: Context) {
 
 export async function createAktivitas(c: Context) {
   try {
+    const actor = c.get('jwtUser') as JwtPayload
     const body = await c.req.json<{
-      user_id: number
+      user_id?: number
       jenis: string
       judul: string
       deskripsi?: string
       tanggal: string
-      skor_raw: number
+      skor_raw?: number
     }>()
 
-    const { user_id, jenis, judul, tanggal } = body
-    if (!user_id || !jenis || !judul || !tanggal) {
-      return c.json({ error: 'user_id, jenis, judul, tanggal wajib diisi' }, 400)
+    const { jenis, judul, tanggal } = body
+    if (!jenis || !judul || !tanggal) {
+      return c.json({ error: 'jenis, judul, tanggal wajib diisi' }, 400)
     }
     if (!['pendidikan', 'penelitian', 'pengabdian'].includes(jenis)) {
       return c.json({ error: 'jenis tidak valid' }, 400)
     }
 
-    const rows = await insertAktivitas(body)
+    // Force user_id from JWT — dosen cannot create aktivitas on behalf of others
+    const user_id = PRIVILEGED_ROLES.includes(actor.role) && body.user_id
+      ? body.user_id
+      : actor.id
+
+    const rows = await insertAktivitas({ ...body, user_id })
     return c.json({ data: rows[0] }, 201)
   } catch (_e) {
     return c.json({ error: 'Failed to create aktivitas' }, 500)
@@ -76,6 +105,18 @@ export async function editAktivitas(c: Context) {
   if (isNaN(id)) return c.json({ error: 'Invalid ID' }, 400)
 
   try {
+    const actor = c.get('jwtUser') as JwtPayload
+
+    // Fetch record first to check ownership
+    const existing = await findAktivitasById(id)
+    if (!existing.length) return c.json({ error: 'Aktivitas not found' }, 404)
+    const record = existing[0] as Record<string, unknown>
+
+    // IDOR check
+    if (!PRIVILEGED_ROLES.includes(actor.role) && record.user_id !== actor.id) {
+      return c.json({ error: 'Forbidden: bukan milik Anda' }, 403)
+    }
+
     const body = await c.req.json<{
       judul?: string
       deskripsi?: string
@@ -99,7 +140,20 @@ export async function editAktivitas(c: Context) {
 export async function deleteAktivitas(c: Context) {
   const id = parseInt(c.req.param('id') ?? '')
   if (isNaN(id)) return c.json({ error: 'Invalid ID' }, 400)
+
   try {
+    const actor = c.get('jwtUser') as JwtPayload
+
+    // Fetch record first to check ownership
+    const existing = await findAktivitasById(id)
+    if (!existing.length) return c.json({ error: 'Aktivitas not found' }, 404)
+    const record = existing[0] as Record<string, unknown>
+
+    // IDOR check
+    if (!PRIVILEGED_ROLES.includes(actor.role) && record.user_id !== actor.id) {
+      return c.json({ error: 'Forbidden: bukan milik Anda' }, 403)
+    }
+
     const rows = await removeAktivitas(id)
     if (!rows.length) return c.json({ error: 'Aktivitas not found' }, 404)
     return c.json({ message: 'Aktivitas deleted' })
@@ -111,7 +165,20 @@ export async function deleteAktivitas(c: Context) {
 export async function submitAktivitasDraft(c: Context) {
   const id = parseInt(c.req.param('id') ?? '')
   if (isNaN(id)) return c.json({ error: 'Invalid ID' }, 400)
+
   try {
+    const actor = c.get('jwtUser') as JwtPayload
+
+    // Fetch record first to check ownership
+    const existing = await findAktivitasById(id)
+    if (!existing.length) return c.json({ error: 'Aktivitas not found' }, 400)
+    const record = existing[0] as Record<string, unknown>
+
+    // IDOR check
+    if (!PRIVILEGED_ROLES.includes(actor.role) && record.user_id !== actor.id) {
+      return c.json({ error: 'Forbidden: bukan milik Anda' }, 403)
+    }
+
     const rows = await submitAktivitas(id)
     if (!rows.length) return c.json({ error: 'Aktivitas not found or not in draft status' }, 400)
     return c.json({ data: rows[0] })

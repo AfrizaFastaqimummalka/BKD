@@ -1,4 +1,5 @@
 import type { Context } from 'hono'
+import type { JwtPayload } from '../middleware/auth.js'
 import {
   getAktivitasStatus,
   insertVerifikasi,
@@ -31,6 +32,13 @@ export async function getVerifikasiHistory(c: Context) {
 export async function processVerifikasi(c: Context) {
   const aktivitasId = parseInt(c.req.param('aktivitas_id') ?? '')
   if (isNaN(aktivitasId)) return c.json({ error: 'Invalid ID' }, 400)
+
+  // RBAC: only admin or reviewer may process verifikasi
+  const actor = c.get('jwtUser') as JwtPayload
+  if (!['admin', 'reviewer'].includes(actor.role)) {
+    return c.json({ error: 'Forbidden: hanya admin atau reviewer yang dapat memverifikasi' }, 403)
+  }
+
   try {
     const body = await c.req.json<{
       reviewer_id: number
